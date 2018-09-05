@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+    <db:mysql-config name="MySQL_Configuration" host="sql12.freemysqlhosting.net" port="3306" user="sql12255044" password="4py6tEHBUC" database="sql12255044" doc:name="MySQL Configuration"/>
+	
+	
+	<flow name="get:/customer:ms3-contact-api-config">
+        <db:select config-ref="MySQL_Configuration" doc:name="Database">
+            <db:parameterized-query><![CDATA[select * from customer]]></db:parameterized-query>
+        </db:select>
+        <dw:transform-message doc:name="Transform Message">
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+---
+payload map $]]></dw:set-payload>
+        </dw:transform-message>
+    </flow>
+	 <flow name="put:/customer/{customerId}:ms3-contact-api-config">
+        <db:update config-ref="MySQL_Configuration" doc:name="Database">
+            <db:parameterized-query><![CDATA[UPDATE customer
+SET cust_info = #[payload]
+WHERE customer_id = #[message.inboundProperties.'http.uri.params'.customerId]]]></db:parameterized-query>
+        </db:update>
+        <set-payload value="{&#xA;&quot;status&quot; : &quot;success&quot;&#xA;}" doc:name="Set Payload"/>
+    </flow>
+    <flow name="delete:/customer/{customerId}:ms3-contact-api-config">
+        <db:delete config-ref="MySQL_Configuration" doc:name="Database">
+            <db:parameterized-query><![CDATA[DELETE FROM customer WHERE customer_id = #[message.inboundProperties.'http.uri.params'.customerId]]]></db:parameterized-query>
+        </db:delete>
+        <set-payload value="{&#xA;&quot;status&quot; : &quot;success&quot;&#xA;}" doc:name="Set Payload"/>
+    </flow>
+    <flow name="get:/customer/{customerId}:ms3-contact-api-config">
+        <db:select config-ref="MySQL_Configuration" doc:name="Database">
+            <db:parameterized-query><![CDATA[SELECT * FROM customer WHERE customer_id = #[message.inboundProperties.'http.uri.params'.customerId]]]></db:parameterized-query>
+        </db:select>
+        <dw:transform-message doc:name="Transform Message">
+            <dw:input-payload doc:sample="sample_data\list_map.dwl"/>
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+---
+payload map $.cust_info]]></dw:set-payload>
+        </dw:transform-message>
+    </flow>
+    <flow name="post:/customer:ms3-contact-api-config">
+        <set-property propertyName="Content-Type" value="application/json" doc:name="Property"/>
+        <db:insert config-ref="MySQL_Configuration" doc:name="Database">
+            <db:dynamic-query><![CDATA[insert into customer(customer_id,cust_info) values('132','#[message.payloadAs(java.lang.String)]')]]></db:dynamic-query>
+        </db:insert>
+        <set-payload value="{&#xA;&quot;status&quot; : &quot;success&quot;&#xA;}" doc:name="Set Payload"/>
+    </flow>
+
+</mule>

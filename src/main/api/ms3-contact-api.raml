@@ -1,0 +1,52 @@
+#%RAML 1.0
+title: MS3 Contact API
+baseUri: http://localhost:9090
+
+/customer:
+  get:
+    description : Gets customer with customer id
+    responses:
+      200:
+        body:
+          text/html:
+            example : !include customer.json
+  /{customerId}:
+    get:
+      description : Gets customer with customer id
+      responses:
+        200:
+          body:
+            text/html:
+              example : !include customer.json
+    delete:
+      description : Delete customer with customer id
+      responses:
+        200:
+          body:
+            application/json: 
+              example : {"status": "success"}
+    put:
+      description : update existing customer
+      body : 
+        application/json:
+          example : !include customer.json
+      responses :
+        200:
+          body:
+            application/json:
+              example : {"status":"success"}
+    
+        
+  post:
+    description : Add new customer
+    body : 
+      application/json:
+        example : !include customer.json
+    responses :
+      201:
+        body:
+          application/json:
+            example : {"status":"success"}
+ 
+    
+        
